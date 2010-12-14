@@ -1,0 +1,108 @@
+rails
+rails -v
+rails new TaskManager
+cd TaskManager
+bundle install
+mate .
+pwd
+Pomme-T
+cd Pomme-v
+rails s
+Firefox http://0.0.0.0:3000
+
+git init ; git add . ; git commit -m "Rails tout frais"
+git rm public/index.html public/images/rails.png
+git commit -m "Supression asset qui ne servent plus"
+rails
+rails g
+mate Gemfile
+cp ../demo/Gemfile Gemfile
+bundle install
+rails g
+git add Gemfile Gemfile.lock ; git commit -m "Completion du Gemfile"
+
+rails g scaffold Projects title:string description:text
+rake db:migrate
+cp ../demo/projects.yml test/fixtures/projects.yml
+mate test/fixtures/projects.yml
+rake db:fixtures:load
+git add config/routes.rb app/controllers/projects_controller.rb app/helpers/projects_helper.rb app/models/ app/views/projects/ db/migrate/ db/schema.rb public/stylesheets/scaffold.css test/fixtures/ test/functional/ test/unit/ ; git commit -m "Création de l'échafaudage pour les projets"
+
+rails g web_app_theme:theme -h
+rails g web_app_theme:theme --app-name="My projets"
+git add app/views/layouts/application.html.erb public/images/ public/stylesheets/web-app-theme/ ; git commit -m "Installation du theme pour l'application"
+
+rails g web_app_theme:themed Projects --will-paginate
+git add app/views/projects/_form.html.erb app/views/projects/edit.html.erb app/views/projects/index.html.erb app/views/projects/new.html.erb app/views/projects/show.html.erb app/views/projects/_sidebar.html.erb ; git commit -m "Modification de la vue projet pour être un peu plus Sexy"
+
+mate app/controllers/projects_controller.rb
+.paginate
+git add app/controllers/projects_controller.rb ; git commit -m "Modification du controleur pour paginer"
+Restart rails server
+
+Firefox reload
+& -> "My projets"
+mate config/routes.rb
+root :to => "projects#index"
+git add config/routes.rb ; git commit -m "Ajout d'une route par default"
+
+git tag -a v1.0
+
+rails g devise:install
+mate config/environments/development.rb
+config.action_mailer.default_url_options = { :host => 'localhost:3000' }
+mate config/environments/production.rb
+config.action_mailer.default_url_options = { :host => 'mytaskmanager.heroku.com' }
+
+git add config/environments/*.rb config/initializers/devise.rb config/locales/devise.en.yml ; git commit -m "Installation de Devise"
+
+rails g devise User
+rake db:migrate
+
+git add config/routes.rb db/schema.rb app/models/user.rb db/migrate/20101214221639_devise_create_users.rb test/fixtures/users.yml test/unit/user_test.rb ; git commit -m "Création de l'objet qui va permettre d'authentifier"
+
+rails g controller users index show destroy
+git rm app/views/users/destroy.html.erb
+mate config/routes.rb
+resources :users, :only => [:index, :show, :destroy]
+
+Restart rails server
+
+mate app/controllers/users_controller.rb
+cp ../demo/users_controller.rb app/controllers/users_controller.rb
+
+cp ../demo/application.html.erb app/views/layouts/application.html.erb
+
+for i in app/views/users/* ; do mate $i ; done
+cp ../demo/views_users/* app/views/users/
+
+git add app/controllers/users_controller.rb app/views/layouts/application.html.erb app/views/users/index.html.erb app/views/users/show.html.erb config/routes.rb app/views/users/_sidebar.html.erb ; git commit -m "Complétion du controller, finition sur le thème et route plus propre"
+
+rails g migration add_user_id_to_projects user_id:integer
+mate db/migrate/*_add_user_id_to_projects.rb
+rake db:migrate
+git add db/migrate/*_add_user_id_to_projects.rb db/schema.rb ; git commit -m "Creation de la migration pour associer un user à un projet"
+
+mate app/models/project.rb
+belongs_to :user
+
+mate app/models/user.rb
+has_many :project
+
+git add app/models/project.rb app/models/user.rb ; git commit -m "Association des objets dans les modèles"
+
+for i in app/views/projects/_form.html.erb app/views/projects/index.html.erb app/views/projects/show.html.erb ; do mate $i ; done
+for i in _form.html.erb index.html.erb show.html.erb ; do diff -u ../demo/views_project_users/$i app/views/projects/$i | mdr ; done
+cp ../demo/views_project_users/* app/views/projects/
+
+mate app/controllers/application_controller.rb
+before_filter :authenticate_user!
+git add app/controllers/application_controller.rb app/views/projects/_form.html.erb app/views/projects/index.html.erb app/views/projects/show.html.erb ; git commit -m "Vue user plus intéressantes & forcer les user à être authentifiés"
+
+===================
+
+heroku create mytaskmanager
+git remote -v
+git push heroku master
+heroku rake db:migrate
+heroku rake db:fixtures:load
